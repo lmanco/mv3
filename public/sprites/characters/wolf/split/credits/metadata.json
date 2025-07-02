@@ -1,0 +1,145 @@
+{
+  "exportTimestamp": "2025-07-01T02-50-17",
+  "bodyType": "male",
+  "standardAnimations": {
+    "exported": {
+      "spellcast": [
+        "005 tail Fluffy_Wolf_Tail gray.png",
+        "010 body Body_color fur_grey.png",
+        "020 legs Shorts tan.png",
+        "100 head Wolf_male fur_grey.png",
+        "125 tail Fluffy_Wolf_Tail gray.png"
+      ],
+      "thrust": [
+        "005 tail Fluffy_Wolf_Tail gray.png",
+        "010 body Body_color fur_grey.png",
+        "020 legs Shorts tan.png",
+        "100 head Wolf_male fur_grey.png",
+        "125 tail Fluffy_Wolf_Tail gray.png"
+      ],
+      "walk": [
+        "005 tail Fluffy_Wolf_Tail gray.png",
+        "010 body Body_color fur_grey.png",
+        "020 legs Shorts tan.png",
+        "100 head Wolf_male fur_grey.png",
+        "125 tail Fluffy_Wolf_Tail gray.png"
+      ],
+      "slash": [
+        "005 tail Fluffy_Wolf_Tail gray.png",
+        "010 body Body_color fur_grey.png",
+        "020 legs Shorts tan.png",
+        "100 head Wolf_male fur_grey.png",
+        "125 tail Fluffy_Wolf_Tail gray.png"
+      ],
+      "shoot": [
+        "005 tail Fluffy_Wolf_Tail gray.png",
+        "010 body Body_color fur_grey.png",
+        "020 legs Shorts tan.png",
+        "100 head Wolf_male fur_grey.png",
+        "125 tail Fluffy_Wolf_Tail gray.png"
+      ],
+      "hurt": [
+        "005 tail Fluffy_Wolf_Tail gray.png",
+        "010 body Body_color fur_grey.png",
+        "020 legs Shorts tan.png",
+        "100 head Wolf_male fur_grey.png",
+        "125 tail Fluffy_Wolf_Tail gray.png"
+      ],
+      "climb": [
+        "010 body Body_color fur_grey.png",
+        "020 legs Shorts tan.png",
+        "100 head Wolf_male fur_grey.png",
+        "125 tail Fluffy_Wolf_Tail gray.png"
+      ],
+      "idle": [
+        "005 tail Fluffy_Wolf_Tail gray.png",
+        "010 body Body_color fur_grey.png",
+        "020 legs Shorts tan.png",
+        "100 head Wolf_male fur_grey.png",
+        "125 tail Fluffy_Wolf_Tail gray.png"
+      ],
+      "jump": [
+        "005 tail Fluffy_Wolf_Tail gray.png",
+        "010 body Body_color fur_grey.png",
+        "020 legs Shorts tan.png",
+        "100 head Wolf_male fur_grey.png",
+        "125 tail Fluffy_Wolf_Tail gray.png"
+      ],
+      "sit": [
+        "005 tail Fluffy_Wolf_Tail gray.png",
+        "010 body Body_color fur_grey.png",
+        "020 legs Shorts tan.png",
+        "100 head Wolf_male fur_grey.png",
+        "125 tail Fluffy_Wolf_Tail gray.png"
+      ],
+      "emote": [
+        "005 tail Fluffy_Wolf_Tail gray.png",
+        "010 body Body_color fur_grey.png",
+        "020 legs Shorts tan.png",
+        "100 head Wolf_male fur_grey.png",
+        "125 tail Fluffy_Wolf_Tail gray.png"
+      ],
+      "run": [
+        "005 tail Fluffy_Wolf_Tail gray.png",
+        "010 body Body_color fur_grey.png",
+        "020 legs Shorts tan.png",
+        "100 head Wolf_male fur_grey.png",
+        "125 tail Fluffy_Wolf_Tail gray.png"
+      ],
+      "combat_idle": [
+        "005 tail Fluffy_Wolf_Tail gray.png",
+        "010 body Body_color fur_grey.png",
+        "020 legs Shorts tan.png",
+        "100 head Wolf_male fur_grey.png",
+        "125 tail Fluffy_Wolf_Tail gray.png"
+      ],
+      "backslash": [
+        "005 tail Fluffy_Wolf_Tail gray.png",
+        "010 body Body_color fur_grey.png",
+        "020 legs Shorts tan.png",
+        "100 head Wolf_male fur_grey.png",
+        "125 tail Fluffy_Wolf_Tail gray.png"
+      ],
+      "halfslash": [
+        "005 tail Fluffy_Wolf_Tail gray.png",
+        "010 body Body_color fur_grey.png",
+        "020 legs Shorts tan.png",
+        "100 head Wolf_male fur_grey.png",
+        "125 tail Fluffy_Wolf_Tail gray.png"
+      ]
+    },
+    "failed": {}
+  },
+  "customAnimations": {
+    "exported": {
+      "tool_whip": [
+        "005 tail Fluffy_Wolf_Tail gray.png",
+        "010 body Body_color fur_grey.png",
+        "020 legs Shorts tan.png",
+        "100 head Wolf_male fur_grey.png",
+        "125 tail Fluffy_Wolf_Tail gray.png",
+        "009 weapon Whip whip.png",
+        "150 weapon Whip whip.png"
+      ]
+    },
+    "failed": {}
+  },
+  "frameSize": 64,
+  "frameCounts": {
+    "spellcast": 7,
+    "thrust": 8,
+    "walk": 9,
+    "slash": 6,
+    "shoot": 13,
+    "hurt": 6,
+    "climb": 6,
+    "idle": 2,
+    "jump": 5,
+    "sit": 3,
+    "emote": 3,
+    "run": 8,
+    "combat_idle": 2,
+    "backslash": 13,
+    "halfslash": 7
+  }
+}

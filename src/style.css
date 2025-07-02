@@ -82,6 +82,21 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+#game-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #181818;
+}
+
+#game-container canvas {
+  /* Prevents blurring on pixel art */
+  image-rendering: pixelated;
+  box-shadow: 0 0 32px #000a;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
