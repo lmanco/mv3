@@ -47,6 +47,38 @@ export function setupPlayerAnimations(scene: Phaser.Scene) {
   const FRAME_SIZE = 64;
   const idleTex = scene.textures.get('player_idle').getSourceImage();
   const walkTex = scene.textures.get('player_walk').getSourceImage();
+  // Remove unused let jumpTex, jumpCols;
+  if (scene.textures.exists('player_jump')) {
+    const jumpTex = scene.textures.get('player_jump').getSourceImage();
+    const jumpCols = Math.floor(jumpTex.width / 64);
+    // Row 0: Up, Row 1: Left, Row 2: Down, Row 3: Right
+    scene.anims.create({
+      key: 'jump_up',
+      frames: scene.anims.generateFrameNumbers('player_jump', { start: 0 * jumpCols, end: 0 * jumpCols + jumpCols - 1 }),
+      frameRate: 8,
+      repeat: 0 // Do not loop
+    });
+    scene.anims.create({
+      key: 'jump_left',
+      frames: scene.anims.generateFrameNumbers('player_jump', { start: 1 * jumpCols, end: 1 * jumpCols + jumpCols - 1 }),
+      frameRate: 8,
+      repeat: 0
+    });
+    scene.anims.create({
+      key: 'jump_down',
+      frames: scene.anims.generateFrameNumbers('player_jump', { start: 2 * jumpCols, end: 2 * jumpCols + jumpCols - 1 }),
+      frameRate: 8,
+      repeat: 0
+    });
+    scene.anims.create({
+      key: 'jump_right',
+      frames: scene.anims.generateFrameNumbers('player_jump', { start: 3 * jumpCols, end: 3 * jumpCols + jumpCols - 1 }),
+      frameRate: 8,
+      repeat: 0
+    });
+  } else {
+    console.warn('Texture "player_jump" not found, jump animation will be skipped.');
+  }
   const idleCols = Math.floor(idleTex.width / FRAME_SIZE);
   const walkCols = Math.floor(walkTex.width / FRAME_SIZE);
   const frameIndex = (row: number, col: number, cols: number) => row * cols + col;
@@ -117,7 +149,21 @@ export function updatePlayer(state: PlayerState & { aKey?: Phaser.Input.Keyboard
   }
 
   // Animation: use velocity, not just key state
-  if (Math.abs(body.velocity.x) > 5) {
+  const anims = state.sprite.anims.animationManager;
+  const hasJumpLeft = anims.exists('jump_left');
+  const hasJumpRight = anims.exists('jump_right');
+  if (!body.blocked.down) {
+    // In air: play jump anim if available, else fallback
+    if (state.lastDirection === 'left' && hasJumpLeft) {
+      state.sprite.play('jump_left', true);
+    } else if (state.lastDirection === 'right' && hasJumpRight) {
+      state.sprite.play('jump_right', true);
+    } else if (state.lastDirection === 'left') {
+      state.sprite.play('idle_left', true);
+    } else {
+      state.sprite.play('idle_right', true);
+    }
+  } else if (Math.abs(body.velocity.x) > 5) {
     if (body.velocity.x < 0) {
       state.sprite.play('walk_left', true);
     } else {
