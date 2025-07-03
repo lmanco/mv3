@@ -31,6 +31,9 @@ export function preloadAssets(scene: Phaser.Scene) {
 // Functional: create main scene logic
 function createMainScene(scene: Phaser.Scene, state: { player?: PlayerState }) {
   scene.cameras.main.setBackgroundColor('#181818');
+  // Set world bounds to be wider than the default game size (e.g. 1600x600)
+  scene.physics.world.setBounds(0, 0, 1600, 600);
+  scene.cameras.main.setBounds(0, 0, 1600, 600);
   const platforms = createPlatforms(scene);
 
   if (!scene.textures.exists('player_idle')) {
@@ -44,6 +47,7 @@ function createMainScene(scene: Phaser.Scene, state: { player?: PlayerState }) {
 
   setupPlayerAnimations(scene);
   state.player = createPlayer(scene, 100, 450);
+  state.player.sprite.setCollideWorldBounds(true);
   scene.physics.add.collider(state.player.sprite, platforms);
   scene.cameras.main.startFollow(state.player.sprite);
   state.player.sprite.play('idle_right');
