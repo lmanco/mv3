@@ -50,13 +50,13 @@ export function setupPlayerAnimations(scene: Phaser.Scene) {
   scene.anims.create({
     key: 'walk_right',
     frames: scene.anims.generateFrameNumbers('player_walk', { start: frameIndex(3, 0, walkCols), end: frameIndex(3, walkCols - 1, walkCols) }),
-    frameRate: 7, // Slightly slower walk
+    frameRate: 12, // Faster walk
     repeat: -1,
   });
   scene.anims.create({
     key: 'walk_left',
     frames: scene.anims.generateFrameNumbers('player_walk', { start: frameIndex(1, 0, walkCols), end: frameIndex(1, walkCols - 1, walkCols) }),
-    frameRate: 7, // Slightly slower walk
+    frameRate: 12, // Faster walk
     repeat: -1,
   });
 }
@@ -93,8 +93,8 @@ export function updatePlayer(state: PlayerState & { aKey?: Phaser.Input.Keyboard
       state.sprite.play('idle_right', true);
     }
   }
-  // Jump with up or A
-  if ((state.cursors.up?.isDown || state.aKey?.isDown) && body.blocked.down) {
+  // Jump with A only
+  if (state.aKey?.isDown && body.blocked.down) {
     body.setVelocityY(jumpVelocity);
   }
 }
