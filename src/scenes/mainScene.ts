@@ -52,6 +52,10 @@ function createMainScene(scene: Phaser.Scene, state: { player?: PlayerState }) {
   state.player = createPlayer(scene, 100, 450);
   state.player.sprite.setCollideWorldBounds(true);
   scene.physics.add.collider(state.player.sprite, platforms);
+  // Camera follow with zoom and offset
+  scene.cameras.main.setZoom(1.2); // Slightly zoomed in for more room
+  scene.cameras.main.setDeadzone(120, 200); // Deadzone is about one third of viewport width
+  scene.cameras.main.setFollowOffset(0, 0); // No offset, player is centered until leaving deadzone
   scene.cameras.main.startFollow(state.player.sprite);
   state.player.sprite.play('idle_right');
 }
