@@ -1,6 +1,10 @@
 
 import Phaser from 'phaser';
 
+// Animate player spin (for testing or flip effect)
+// Removed flip logic; replaced with dust cloud effect
+// This function is no longer needed
+
 export type PlayerState = {
   sprite: Phaser.Physics.Arcade.Sprite;
   cursors: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -15,12 +19,37 @@ export type PlayerState = {
   };
   wasJumpDown?: boolean;
   jumpXVelocity?: number;
+  jumpCount?: number;
+  isFlipping?: boolean;
+  flipStartY?: number;
+  _spinTest?: number;
 };
 
 
 export function createPlayer(scene: Phaser.Scene, x: number, y: number): PlayerState {
   const sprite = scene.physics.add.sprite(x, y, 'player_idle', 0);
-  sprite.setOrigin(0.5, 1);
+  sprite.setOrigin(0.5, 0.9); // Feet origin for platformer
+
+// DUST CLOUD ANIMATION SETUP:
+// Place FX052_01.png ... FX052_04.png in public/sprites/fx/dust/
+// In mainScene.ts preload():
+//   this.load.image('dust1', 'sprites/fx/dust/FX052_01.png');
+//   this.load.image('dust2', 'sprites/fx/dust/FX052_02.png');
+//   this.load.image('dust3', 'sprites/fx/dust/FX052_03.png');
+//   this.load.image('dust4', 'sprites/fx/dust/FX052_04.png');
+// In mainScene.ts create():
+//   this.anims.create({
+//     key: 'dust_cloud',
+//     frames: [
+//       { key: 'dust1' },
+//       { key: 'dust2' },
+//       { key: 'dust3' },
+//       { key: 'dust4' }
+//     ],
+//     frameRate: 16,
+//     repeat: 0,
+//     hideOnComplete: true
+//   });
   sprite.setCollideWorldBounds(true);
   sprite.setBounce(0);
   sprite.body.setMaxVelocity(250, 600);
@@ -36,7 +65,7 @@ export function createPlayer(scene: Phaser.Scene, x: number, y: number): PlayerS
     right: scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.D),
     space: scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
   };
-  return { sprite, cursors, lastDirection: 'right', aKey, wasd };
+  return { sprite, cursors, lastDirection: 'right', aKey, wasd, jumpCount: 0, isFlipping: false };
 }
 
 // Setup player animations
@@ -149,6 +178,9 @@ export function updatePlayer(state: PlayerState & { aKey?: Phaser.Input.Keyboard
       body.setVelocityX(0);
     }
     state.jumpXVelocity = undefined; // Reset jumpXVelocity when grounded
+    state.jumpCount = 0; // Reset jump count on landing
+    state.isFlipping = false; // Reset flip state
+    // Do NOT reset angle here; let flip logic handle it
   } else if (state.jumpXVelocity !== undefined) {
     // While airborne, keep x velocity locked
     body.setVelocityX(state.jumpXVelocity);
@@ -179,35 +211,79 @@ export function updatePlayer(state: PlayerState & { aKey?: Phaser.Input.Keyboard
   const jumpDown = !!jumpKey || !!padJump;
 
   // Edge-triggered jump: only start jump on new press
-  if (jumpDown && !state.wasJumpDown && body.blocked.down) {
-    body.setVelocityY(jumpVelocity);
-    // Only apply horizontal velocity if moving
-    if (left && !right) {
-      state.jumpXVelocity = -speed;
-      body.setVelocityX(-speed);
-      state.lastDirection = 'left';
-    } else if (right && !left) {
-      state.jumpXVelocity = speed;
-      body.setVelocityX(speed);
-      state.lastDirection = 'right';
-    } else {
-      // No movement key: jump straight up
-      state.jumpXVelocity = 0;
-      body.setVelocityX(0);
-    }
-    // Always play jump animation on jump start
-    const anims = state.sprite.anims.animationManager;
-    if (anims.exists('jump_left') && state.lastDirection === 'left') {
-      state.sprite.play('jump_left', true);
-    } else if (anims.exists('jump_right') && state.lastDirection === 'right') {
-      state.sprite.play('jump_right', true);
-    } else if (anims.exists('jump_up')) {
-      state.sprite.play('jump_up', true);
-    } else {
-      // fallback to idle
-      state.sprite.play('idle_right', true);
+  // Edge-triggered jump: allow double jump
+  if (jumpDown && !state.wasJumpDown) {
+    if (body.blocked.down) {
+      // First jump
+      body.setVelocityY(jumpVelocity);
+      if (left && !right) {
+        state.jumpXVelocity = -speed;
+        body.setVelocityX(-speed);
+        state.lastDirection = 'left';
+      } else if (right && !left) {
+        state.jumpXVelocity = speed;
+        body.setVelocityX(speed);
+        state.lastDirection = 'right';
+      } else {
+        state.jumpXVelocity = 0;
+        body.setVelocityX(0);
+      }
+      state.jumpCount = 1;
+      // Play jump animation
+      const anims = state.sprite.anims.animationManager;
+      if (anims.exists('jump_left') && state.lastDirection === 'left') {
+        state.sprite.play('jump_left', true);
+      } else if (anims.exists('jump_right') && state.lastDirection === 'right') {
+        state.sprite.play('jump_right', true);
+      } else if (anims.exists('jump_up')) {
+        state.sprite.play('jump_up', true);
+      } else {
+        state.sprite.play('idle_right', true);
+      }
+    } else if ((state.jumpCount ?? 0) < 2) {
+      // Second jump (double jump)
+      body.setVelocityY(jumpVelocity);
+      state.jumpCount = 2;
+      // Play jump animation
+      const anims = state.sprite.anims.animationManager;
+      if (anims.exists('jump_left') && state.lastDirection === 'left') {
+        state.sprite.play('jump_left', true);
+      } else if (anims.exists('jump_right') && state.lastDirection === 'right') {
+        state.sprite.play('jump_right', true);
+      } else if (anims.exists('jump_up')) {
+        state.sprite.play('jump_up', true);
+      } else {
+        state.sprite.play('idle_right', true);
+      }
+      // Trigger dust cloud animation (only if at least one frame is loaded)
+      const scene = state.sprite.scene;
+      let dustFrame = 'dust1';
+      for (let i = 1; i <= 4; i++) {
+        if (scene.textures.exists('dust' + i)) {
+          dustFrame = 'dust' + i;
+          break;
+        }
+      }
+      if (scene.anims.exists('dust_cloud') && scene.textures.exists(dustFrame)) {
+        const dust = scene.add.sprite(
+          state.sprite.x,
+          state.sprite.y + state.sprite.height * 0.5 - 30,
+          dustFrame
+        );
+        dust.setOrigin(0.5, 1);
+        dust.setDepth(state.sprite.depth - 1); // Behind player
+        dust.play('dust_cloud');
+        // Ensure dust sprite is visible for the animation duration
+        dust.on('animationcomplete', () => {
+          dust.destroy();
+        });
+      }
     }
   }
+  // ...existing code...
+
+  // --- Flip animation removed; no sprite rotation ---
+  state.sprite.setAngle(0);
 
   // Jump cut: on jump release while rising, cut velocity
   if (!jumpDown && state.wasJumpDown && body.velocity.y < 0) {

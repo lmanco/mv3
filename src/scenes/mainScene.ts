@@ -28,6 +28,11 @@ export function preloadAssets(scene: Phaser.Scene) {
     frameHeight: 64,
   });
   scene.load.image('ground', 'https://labs.phaser.io/assets/sprites/platform.png');
+  // Dust cloud frames
+  scene.load.image('dust1', 'sprites/fx/dust/FX052_01.png');
+  scene.load.image('dust2', 'sprites/fx/dust/FX052_02.png');
+  scene.load.image('dust3', 'sprites/fx/dust/FX052_03.png');
+  scene.load.image('dust4', 'sprites/fx/dust/FX052_04.png');
   scene.load.on('loaderror', (file: { key: string; src: string }) => {
     console.warn('Failed to load asset:', file.key, file.src);
   });
@@ -47,6 +52,20 @@ function createMainScene(scene: Phaser.Scene, state: { player?: PlayerState }) {
     scene.add.text(100, 120, 'ERROR: walk.png not loaded', { color: '#f00' });
     return;
   }
+
+  // Setup dust cloud animation (after preload)
+  scene.anims.create({
+    key: 'dust_cloud',
+    frames: [
+      { key: 'dust1' },
+      { key: 'dust2' },
+      { key: 'dust3' },
+      { key: 'dust4' }
+    ],
+    frameRate: 16,
+    repeat: 0,
+    hideOnComplete: true
+  });
 
   setupPlayerAnimations(scene);
   state.player = createPlayer(scene, 100, 450);
