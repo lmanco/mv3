@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import { createPlayer, setupPlayerAnimations, updatePlayer } from '../player';
-import type { PlayerState } from '../player';
+import { createPlayer, FRAME_SIZE, PlayerAnims, setupPlayerAnimations, updatePlayer } from '../domain/character/player';
+import type { PlayerState } from '../domain/character/player';
 
 // Only a single flat ground platform
 function createPlatforms(scene: Phaser.Scene) {
@@ -12,18 +12,32 @@ function createPlatforms(scene: Phaser.Scene) {
   return platforms;
 }
 
-// No collectibles, no door, no wall
+const paths = {
+  [PlayerAnims.idle]: '/sprites/characters/wolf/standard/idle.png',
+  [PlayerAnims.walk]: '/sprites/characters/wolf/standard/walk.png',
+  [PlayerAnims.jump]: '/sprites/characters/wolf/standard/jump.png',
+};
+
+function loadPlayerSprites(scene: Phaser.Scene) {
+  Object.entries(paths).forEach(([anim, path]) => {
+    scene.load.spritesheet(anim, path, {
+      frameWidth: FRAME_SIZE,
+      frameHeight: FRAME_SIZE,
+    });
+  });
+}
 
 export function preloadAssets(scene: Phaser.Scene) {
-  scene.load.spritesheet('player_idle', '/sprites/characters/wolf/standard/idle.png', {
+  // loadPlayerSprites(scene);
+  scene.load.spritesheet(PlayerAnims.idle, paths[PlayerAnims.idle], {
+    frameWidth: FRAME_SIZE,
+    frameHeight: 64,
+  });
+  scene.load.spritesheet(PlayerAnims.walk, paths[PlayerAnims.walk], {
     frameWidth: 64,
     frameHeight: 64,
   });
-  scene.load.spritesheet('player_walk', '/sprites/characters/wolf/standard/walk.png', {
-    frameWidth: 64,
-    frameHeight: 64,
-  });
-  scene.load.spritesheet('player_jump', '/sprites/characters/wolf/standard/jump.png', {
+  scene.load.spritesheet(PlayerAnims.jump, paths[PlayerAnims.jump], {
     frameWidth: 64,
     frameHeight: 64,
   });
