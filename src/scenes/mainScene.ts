@@ -1,5 +1,11 @@
 import Phaser from 'phaser';
-import { createPlayer, FRAME_SIZE, PlayerAnims, setupPlayerAnimations, updatePlayer } from '../domain/character/player';
+import {
+  createPlayer,
+  FRAME_SIZE,
+  PlayerAnims,
+  setupPlayerAnimations,
+  updatePlayer
+} from '../domain/character/player';
 import type { PlayerState } from '../domain/character/player';
 
 // Only a single flat ground platform
@@ -25,28 +31,15 @@ function loadPlayerSprites(scene: Phaser.Scene) {
       frameHeight: FRAME_SIZE,
     });
   });
+  // Dust cloud frames
+  Array.from(new Array(4)).map((_, i) => {
+    scene.load.image(`dust${i + 1}`, `sprites/fx/dust/FX052_0${i + 1}.png`);
+  });
 }
 
 export function preloadAssets(scene: Phaser.Scene) {
-  // loadPlayerSprites(scene);
-  scene.load.spritesheet(PlayerAnims.idle, paths[PlayerAnims.idle], {
-    frameWidth: FRAME_SIZE,
-    frameHeight: 64,
-  });
-  scene.load.spritesheet(PlayerAnims.walk, paths[PlayerAnims.walk], {
-    frameWidth: 64,
-    frameHeight: 64,
-  });
-  scene.load.spritesheet(PlayerAnims.jump, paths[PlayerAnims.jump], {
-    frameWidth: 64,
-    frameHeight: 64,
-  });
+  loadPlayerSprites(scene);
   scene.load.image('ground', 'https://labs.phaser.io/assets/sprites/platform.png');
-  // Dust cloud frames
-  scene.load.image('dust1', 'sprites/fx/dust/FX052_01.png');
-  scene.load.image('dust2', 'sprites/fx/dust/FX052_02.png');
-  scene.load.image('dust3', 'sprites/fx/dust/FX052_03.png');
-  scene.load.image('dust4', 'sprites/fx/dust/FX052_04.png');
   scene.load.on('loaderror', (file: { key: string; src: string }) => {
     console.warn('Failed to load asset:', file.key, file.src);
   });
@@ -90,7 +83,6 @@ function createMainScene(scene: Phaser.Scene, state: { player?: PlayerState }) {
   scene.cameras.main.setDeadzone(120, 200); // Deadzone is about one third of viewport width
   scene.cameras.main.setFollowOffset(0, 0); // No offset, player is centered until leaving deadzone
   scene.cameras.main.startFollow(state.player.sprite);
-  state.player.sprite.play('idle_right');
 }
 
 function updateMainScene(state: { player?: PlayerState }) {

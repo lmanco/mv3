@@ -7,15 +7,24 @@ export const Action = {
   JUMP: 'jump' as Action,
 } as const;
 
-export const AnimKeys = Object.values(Action)
-  .reduce((acc, action) => {
-    acc[action] = Object.values(Direction)
-      .reduce((dirAcc, direction) => {
-        dirAcc[direction] = `${action}_${direction}`;
-        return dirAcc;
-      }, {} as Record<Direction, string>);
-    return acc;
-  }, {} as Record<Action, Record<Direction, string>>);
+export function createAnimKey(action: Action, direction: Direction, prefix: string): string {
+  return `${prefix}_${action}_${direction}`;
+}
+
+export function createSpriteKey(action: Action, prefix: string): string {
+  return `${prefix}_${action}`;
+}
+
+export const AnimKeys = (prefix: string) =>
+  Object.values(Action)
+    .reduce((acc, action) => {
+      acc[action] = Object.values(Direction)
+        .reduce((dirAcc, direction) => {
+          dirAcc[direction] = createAnimKey(action, direction, prefix);
+          return dirAcc;
+        }, {} as Record<Direction, string>);
+      return acc;
+    }, {} as Record<Action, Record<Direction, string>>);
 
 export const createActionFns = {
   [Action.IDLE]: createIdleAnim,
@@ -29,25 +38,29 @@ export function createActionAnims(
   action: Action,
   directions: Direction[],
   anims: Phaser.Animations.AnimationManager,
-  cols: number
+  cols: number,
+  prefix: string
 ) {
   if (!createActionFns[action]) {
     throw new TypeError(`Unknown action: ${action}`);
   }
-  directions.forEach((direction) => { createActionFns[action](anims, direction, cols); });
+  directions.forEach((direction) => { 
+    createActionFns[action](anims, direction, cols, prefix); 
+  });
 }
 
 // Idle breathing: only two frames, slow inhale/exhale
 export function createIdleAnim(
   anims: Phaser.Animations.AnimationManager,
   direction: Direction,
-  idleCols: number
+  idleCols: number,
+  prefix: string
 ) {
   const row = getRow(direction);
   anims.create({
-    key: `idle_${direction}`,
+    key: createAnimKey(Action.IDLE, direction, prefix),
     frames:
-      anims.generateFrameNumbers('player_idle', {
+      anims.generateFrameNumbers(createSpriteKey(Action.IDLE, prefix), {
         start: frameIndex(row, 0, idleCols),
         end: frameIndex(row, 1, idleCols)
       }),
@@ -59,12 +72,13 @@ export function createIdleAnim(
 export function createWalkAnim(
   anims: Phaser.Animations.AnimationManager,
   direction: Direction,
-  walkCols: number
+  walkCols: number,
+  prefix: string
 ) {
   const row = getRow(direction);
   anims.create({
-    key: `walk_${direction}`,
-    frames: anims.generateFrameNumbers('player_walk', {
+    key: createAnimKey(Action.WALK, direction, prefix),
+    frames: anims.generateFrameNumbers(createSpriteKey(Action.WALK, prefix), {
       start: frameIndex(row, 0, walkCols),
       end: frameIndex(row, walkCols - 1, walkCols)
     }),
@@ -76,12 +90,13 @@ export function createWalkAnim(
 export function createJumpAnim(
   anims: Phaser.Animations.AnimationManager,
   direction: Direction,
-  jumpCols: number
+  jumpCols: number,
+  prefix: string
 ) {
   const row = getRow(direction);
   anims.create({
-    key: `jump_${direction}`,
-    frames: anims.generateFrameNumbers('player_jump', {
+    key: createAnimKey(Action.JUMP, direction, prefix),
+    frames: anims.generateFrameNumbers(createSpriteKey(Action.JUMP, prefix), {
       start: row * jumpCols,
       end: row * jumpCols + jumpCols - 1
     }),

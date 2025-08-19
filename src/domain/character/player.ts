@@ -6,7 +6,8 @@ import {
   Direction,
   getTexture,
   createActionAnims,
-  AnimKeys
+  AnimKeys,
+  createSpriteKey
 } from './common';
 
 export type KeyboardInput = {
@@ -38,9 +39,11 @@ export type PlayerState = {
 
 export const FRAME_SIZE = 64;
 
+export const PLAYER_PREFIX = 'player';
+
 export const PlayerAnims = Object.values(Action)
   .reduce((acc, action) => {
-    acc[action] = `player_${action}`;
+    acc[action] = createSpriteKey(action, PLAYER_PREFIX);
     return acc;
   }, {} as Record<Action, string>);
 
@@ -99,7 +102,7 @@ export function setupPlayerAnimations(scene: Phaser.Scene) {
     const cols = actionTextures[action] ?
       Math.floor(actionTextures[action].width / FRAME_SIZE) :
       0;
-    createActionAnims(action, sidescrollerDirections, scene.anims, cols);
+    createActionAnims(action, sidescrollerDirections, scene.anims, cols, PLAYER_PREFIX);
   });
 }
 
@@ -149,12 +152,10 @@ function handleGroundMovement(state: PlayerState, body: Phaser.Physics.Arcade.Bo
 
 function playJumpAnimation(state: PlayerState) {
   const anims = state.sprite.anims.animationManager;
-  if (!anims.exists(AnimKeys.jump.left) || !anims.exists(AnimKeys.jump.right))
+  const animKeys = AnimKeys(PLAYER_PREFIX);
+  if (!anims.exists(animKeys.jump[state.lastDirection]))
     return;
-  if (state.lastDirection === SidescrollerDirection.LEFT)
-    state.sprite.play(AnimKeys.jump.left, true);
-  else
-    state.sprite.play(AnimKeys.jump.right, true);
+  state.sprite.play(animKeys.jump[state.lastDirection], true);
 }
 
 const DUST_CONFIG = {
@@ -177,8 +178,7 @@ function createDustCloud(state: PlayerState) {
     state.sprite.x,
     state.sprite.y + state.sprite.height * 0.5 - DUST_CONFIG.Y_OFFSET,
     dustFrame
-  )
-    .setOrigin(0.5, 1)
+  ).setOrigin(0.5, 1)
     .setDepth(state.sprite.depth - 1)
     .play(DUST_CONFIG.ANIM_KEY)
     .once('animationcomplete', () => dust.destroy());
@@ -192,11 +192,11 @@ function handleJump(state: PlayerState, body: Phaser.Physics.Arcade.Body, jumpDo
       if (left && !right) {
         state.jumpXVelocity = -PLAYER_CONSTANTS.SPEED;
         body.setVelocityX(-PLAYER_CONSTANTS.SPEED);
-        state.lastDirection = 'left';
+        state.lastDirection = SidescrollerDirection.LEFT;
       } else if (right && !left) {
         state.jumpXVelocity = PLAYER_CONSTANTS.SPEED;
         body.setVelocityX(PLAYER_CONSTANTS.SPEED);
-        state.lastDirection = 'right';
+        state.lastDirection = SidescrollerDirection.RIGHT;
       } else {
         state.jumpXVelocity = 0;
         body.setVelocityX(0);
@@ -220,42 +220,47 @@ function handleJump(state: PlayerState, body: Phaser.Physics.Arcade.Body, jumpDo
   state.wasJumpDown = jumpDown;
 }
 
-function updateAnimation(state: PlayerState, body: Phaser.Physics.Arcade.Body) {
-  if (!body.blocked.down) {
-    // If jump animation is not playing, show last frame of jump anim
-    const anims = state.sprite.anims.animationManager;
-    const currentAnim = state.sprite.anims.currentAnim?.key;
-    if (
-      !anims.exists(AnimKeys.jump.left) ||
-      !anims.exists(AnimKeys.jump.right)
-    ) {
-      // fallback to idle
-      state.sprite.play('idle_right', true);
-      return;
-    }
+const ANIM_CONFIG = {
+  MOVEMENT_THRESHOLD: 5,
+} as const;
 
-    if (state.lastDirection === SidescrollerDirection.LEFT) {
-      if (currentAnim !== AnimKeys.jump.left) {
-        state.sprite.play(AnimKeys.jump.left, true);
-      }
-    } else if (state.lastDirection === SidescrollerDirection.RIGHT) {
-      if (currentAnim !== AnimKeys.jump.right) {
-        state.sprite.play(AnimKeys.jump.right, true);
-      }
-    }
-  } else if (Math.abs(body.velocity.x) > 5) {
-    if (body.velocity.x < 0) {
-      state.sprite.play(AnimKeys.walk.left, true);
-    } else {
-      state.sprite.play(AnimKeys.walk.right, true);
-    }
-  } else {
-    if (state.lastDirection === SidescrollerDirection.LEFT) {
-      state.sprite.play(AnimKeys.idle.left, true);
-    } else {
-      state.sprite.play(AnimKeys.idle.right, true);
-    }
+type AnimationState = {
+  isGrounded: boolean;
+  isMoving: boolean;
+  direction: SidescrollerDirection;
+  currentAnim: string | undefined;
+};
+
+function getAnimationState(state: PlayerState, body: Phaser.Physics.Arcade.Body): AnimationState {
+  return {
+    isGrounded: body.blocked.down,
+    isMoving: Math.abs(body.velocity.x) > ANIM_CONFIG.MOVEMENT_THRESHOLD,
+    direction: state.lastDirection,
+    currentAnim: state.sprite.anims.currentAnim?.key
+  };
+}
+
+function getNextAnimation(animState: AnimationState): Action {
+  if (!animState.isGrounded) return Action.JUMP;
+  if (animState.isMoving) return Action.WALK;
+  return Action.IDLE;
+}
+
+function playAnimation(state: PlayerState, animKey: Action) {
+  const animKeys = AnimKeys(PLAYER_PREFIX);
+  const animation = animKeys[animKey][state.lastDirection];
+  const anims = state.sprite.anims.animationManager;
+
+  // Only play if animation exists and is different from current
+  if (anims.exists(animation) && animation !== state.sprite.anims.currentAnim?.key) {
+    state.sprite.play(animation, true);
   }
+}
+
+function updateAnimation(state: PlayerState, body: Phaser.Physics.Arcade.Body) {
+  const animState = getAnimationState(state, body);
+  const nextAnim = getNextAnimation(animState);
+  playAnimation(state, nextAnim);
 }
 
 // Player update logic
